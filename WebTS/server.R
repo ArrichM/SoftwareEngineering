@@ -48,15 +48,28 @@ shinyServer(function(input, output, session) {
     return(query_ts)
   })
   
+  eurostat_query <- eventReactive(input$start,{
+    target <- input$target #read desired target variable from user input
+    region <- input$region #read desired region from user input
+    
+    target_ts <- switch(target, #use switch to select correct target series. the query funcitons can be found in resources.R
+                         Unemployment = get_eurounemp(region = region),
+                         Consumption = get_eurocons(region = region)
+                        )
+    return(target_ts) #return the right target series
+  })
   
   ############
   ##Outputs###
   ############
   
-  output$query_plot <- renderPlot({
-    query_ts <- google_query()
-    
-    autoplot.zoo(query_ts)
+  output$google_plot <- renderPlot({ #define plot as output to display to the user
+    query_ts <- google_query() #load the google trend series from the output of google_query
+    autoplot.zoo(query_ts) #autolpot the series using ggplot2
+  })
+  output$eurostat_plot <- renderPlot({ #define plot as output to display to the user
+    target_ts <- eurostat_query() #load the eurostat data from the output of eurostat_query
+    autoplot.zoo(target_ts) #autolpot the series using ggplot2
   })
   
 })
