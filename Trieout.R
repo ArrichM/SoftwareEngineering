@@ -14,7 +14,7 @@ stdz <- function(x) (x-mean(x,na.rm=T))/sd(x,na.rm=T)
 get.eurounemp <- function(){
   search_eurostat("unemployment", fixed = F)$code #namq_10_gdp
   unemp <- get_eurostat("une_rt_m", select_time = "M")
-  unemp <- subset(unemp, geo == "UK" & sex == "T" & unit == "PC_ACT" & age == "TOTAL" & s_adj == "NSA")
+  unemp <- subset(unemp, geo == "AT" & sex == "T" & unit == "PC_ACT" & age == "TOTAL" & s_adj == "NSA")
   unemp <- label_eurostat(unemp, lang = "de")
   unemp$time <- as.POSIXct.Date(unemp$time)
   unemp.ts <- ts(rev(unemp$values), start = c(as.numeric(tail(substr(unemp$time,1,4),1)),
@@ -39,7 +39,7 @@ get.eurocons <- function(){
 
 freq_use <- 12
 #query the google api for keywords
-query <- gtrends(c("job"),geo = "GB", gprop = "web", time = "all")
+query <- gtrends(c("arbeitslosengeld"),geo = "AT", gprop = "web", time = "all")
 #query2 <-  gtrends(c("Zalando"),geo = "AT", gprop = "web", time = "all")
 tophits <- query$related_queries$value[1:5]
 tophits
@@ -47,7 +47,7 @@ tophits
 
 #get series for keywords separately to get full granity of each series
 google_multiple <- function(tophits){
-  query_multiple <- lapply(tophits, function(x) gtrends(x,geo = "GB", gprop = "web", time = "all")[[1]] %>%  
+  query_multiple <- lapply(tophits, function(x) gtrends(x,geo = "AT", gprop = "web", time = "all")[[1]] %>%  
                              dcast(date ~ keyword + geo, value.var = "hits"))
   #transform output to ts
   query_multiple_ts <- lapply(query_multiple, function(x) ts(x[,2],start =c(year(x$date[1]),month(x$date[1])), frequency = 12))
@@ -63,7 +63,7 @@ query_multiple_ts_bound <- google_multiple(tophits)
 
 query_multiple_ts_bound <- ts(apply(query_multiple_ts_bound,2,function(x) as.numeric(gsub("<","",as.character(x)))),start=start(query_multiple_ts_bound))
 
-plot(query_multiple_ts_bound)
+autoplot.zoo(query_multiple_ts_bound)
 
 #do PCA of the time series and get predicted PCs
 PCA_query <- prcomp((query_multiple_ts_bound)) #insert diff here if differentiation is desired
@@ -78,7 +78,7 @@ unemp = get.eurounemp()
 #unemp = get.eurocons()
 
 #create lagged set and set colnames
-nlags <- 1:9
+nlags <- 0:12
 
 comp_lags <- do.call(cbind,lapply(nlags, function(x) lag(comps_ts,-x)))
 colnames(comp_lags) <- paste0(rep(colnames(comps_ts),length(nlags)),"-L",rep(nlags,each = 5))
