@@ -28,9 +28,11 @@ shinyServer(function(input, output, session) {
 
     #query the google API using the user inputs and save answer to variable named "query"
     query <- gtrends(keyword, geo = region, gprop = "web", time = "all")
-
-    shiny::validate( #make sure the keyword yields at least any results
-      need(!is.null(query$interest_over_time), "The keyword you entered seems not to be very popular. Please try a different one.")
+    
+    enable_button <- function() updateButton(session, "start", disabled = F) #in case of error, enable button again, see next lines
+    
+    shiny::validate( #make sure the keyword yields at least any results. if not, enable button and return error message
+      need_on_exit(!is.null(query$interest_over_time), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
     )
     
     tophits <- c(keyword,query$related_queries$value[1:4]) #save keyword itself and top 4 related words - 5 words in total

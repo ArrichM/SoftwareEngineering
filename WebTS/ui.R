@@ -17,7 +17,7 @@ body <- dashboardBody(
     textInput("keyword","Please enter a keyword you want to use","Please enter a word"),
     textInput("region","Please choose a region to specify the query to", "AT"),
     plotOutput("query_plot"),
-    bsButton("start","Go!", disabled = F)
+    bsButton("start","Go!")
   )
 )
 

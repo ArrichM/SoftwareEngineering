@@ -14,3 +14,13 @@ google_multiple <- function(tophits,region){
   return(query_multiple_ts_bound)
 }
 
+need_on_exit <- function (expr,FUN, message = paste(label, "must be provided"), label){
+  #this function takes an expression and if it is true, it returns NULL. if it is false, it will execute the function specified with as FUN
+  #and return the message as error message. It is a slightly altered version of shiny::need
+  force(message)
+  if (!isTruthy(expr)){
+    FUN()
+    return(message)
+  }
+  else return(invisible(NULL))
+}
