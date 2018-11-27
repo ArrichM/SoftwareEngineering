@@ -15,7 +15,7 @@ google_multiple <- function(tophits,region){
 }
 
 need_on_exit <- function (expr,FUN, message = paste(label, "must be provided"), label){
-  #this function takes an expression and if it is true, it returns NULL. if it is false, it will execute the function specified with as FUN
+  #this function takes an expression and if it is true, it returns NULL. if it is false, it will execute the function specified as FUN
   #and return the message as error message. It is a slightly altered version of shiny::need
   force(message)
   if (!isTruthy(expr)){
@@ -23,4 +23,35 @@ need_on_exit <- function (expr,FUN, message = paste(label, "must be provided"), 
     return(message)
   }
   else return(invisible(NULL))
+}
+
+get_eurounemp <- function(region){
+  #this function queries the eurostat API and retrieves the unadjusted series for the unemployment rate of the corresponding region
+  search_eurostat("unemployment", fixed = F)$code #look up the code of the series: namq_10_gdp
+  unemp <- get_eurostat("une_rt_m", select_time = "M") #download monthly series
+  #select the not seasonally adjusted series of the selected region, both genders, all ages, in percent:
+  unemp <- subset(unemp, geo == region & sex == "T" & unit == "PC_ACT" & age == "TOTAL" & s_adj == "NSA")
+  unemp <- label_eurostat(unemp, lang = "de") #asign human-readable labels to the data
+  unemp$time <- as.POSIXct.Date(unemp$time) #format time as date
+  unemp.ts <- ts(rev(unemp$values), start = c(as.numeric(tail(substr(unemp$time,1,4),1)), #transform to time series object
+                                              as.numeric(tail(substr(unemp$time,6,7),1))), freq = 12)
+  unemp.ts <- unemp.ts/100 #transform to decimal
+  return(unemp.ts)
+}
+
+get_eurocons <- function(region){
+  #this function queries the eurostat API and retrieves the unadjusted series for the private consumption of the corresponding region
+  search_eurostat("consumption", fixed = F)$code # get code of series namq_10_fcs
+  privcons <- get_eurostat("namq_10_fcs", select_time = "Q") #download quarterly series
+  privcons <- subset(privcons, geo == region) #select correct region
+  privcons <- label_eurostat(privcons, lang = "de") #assign human readable labels
+  privcons <- subset(privcons, unit == "Verkettete Volumen (2010), Millionen Euro" & #not adjusted level values
+                       s_adj == "Unbereinigte Daten (d.h. weder saisonbereinigte noch kalenderbereinigte Daten)" &
+                       na_item == "Konsumausgaben der privaten Haushalte") #adjust correct series
+  privcons$time <- as.POSIXct.Date(privcons$time)  #format time as date
+  privcons.ts <- ts(rev(privcons$values), start = c(as.numeric(tail(substr(privcons$time,1,4),1)), #transform to time series object
+                                                    as.numeric(tail(substr(privcons$time,6,7),1))), freq = 4)
+  #privcons.ts <- diff(privcons.ts, lag = 1)/privcons.ts #transform to quarter to quarter growth
+  #use absolute values, suppose cointegration
+  return(privcons.ts)
 }
