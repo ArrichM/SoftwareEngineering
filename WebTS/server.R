@@ -118,10 +118,7 @@ shinyServer(function(input, output, session) {
     plot(pca_fitted, col = "red", type = "l") #plot the fitted values
     lines(target_ts) #add the target series as comparison
   })
-  output$pca_model <- renderPrint({
-    pca_model <- analysis()$pca_model
-    return(pca_model)
-  })
+
   
 })
 

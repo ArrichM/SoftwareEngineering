@@ -22,8 +22,7 @@ body <- dashboardBody(
     bsButton("start","Go!"),
     plotOutput("google_plot"),
     plotOutput("eurostat_plot"),
-    plotOutput("fitted_plot"),
-    verbatimTextOutput("pca_model")
+    plotOutput("fitted_plot")
   )
 )
 
