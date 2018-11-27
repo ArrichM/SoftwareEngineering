@@ -51,6 +51,7 @@ get_eurocons <- function(region){
   privcons$time <- as.POSIXct.Date(privcons$time)  #format time as date
   privcons.ts <- ts(rev(privcons$values), start = c(as.numeric(tail(substr(privcons$time,1,4),1)), #transform to time series object
                                                     as.numeric(tail(substr(privcons$time,6,7),1))), freq = 4)
-  privcons.ts <- diff(privcons.ts, lag = 1)/privcons.ts #transform to quarter to quarter growth
+  #privcons.ts <- diff(privcons.ts, lag = 1)/privcons.ts #transform to quarter to quarter growth
+  #use absolute values, suppose cointegration
   return(privcons.ts)
 }

@@ -1,4 +1,5 @@
-toload <- c("shiny","shinydashboard","shinyBS")
+toload <- c("shiny","shinydashboard","gtrendsR", "magrittr","reshape2","lubridate","zoo","tseries","eurostat","dyn","ggplot2","ggfortify",
+            "shinyBS","countrycode","pander")
 toinstall <- toload[which(toload %in% installed.packages()[,1] == F)] #which packages are not already installed?
 lapply(toinstall, install.packages, character.only = TRUE) #intall missing packages
 lapply(toload, require, character.only = TRUE) #load packages
@@ -21,8 +22,8 @@ body <- dashboardBody(
     bsButton("start","Go!"),
     plotOutput("google_plot"),
     plotOutput("eurostat_plot"),
-    plotOutput("fitted_plot")
-    
+    plotOutput("fitted_plot"),
+    verbatimTextOutput("pca_model")
   )
 )
 
