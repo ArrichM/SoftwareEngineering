@@ -101,6 +101,3 @@ point_estimate <- na.remove(ts(predict(pca.model,newdata = comp_lags), start = s
 plot(unemp)
 lines(point_estimate, col = "red")
 
-
-
-
