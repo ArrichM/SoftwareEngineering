@@ -13,8 +13,7 @@ shinyServer(function(input, output, session) {
     updateButton(session, "start", disabled = T) #disable button while query is running to avoid repeated querying
   })
   
-  
-  
+  enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again
   
   google_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
     
@@ -35,7 +34,6 @@ shinyServer(function(input, output, session) {
     #query the google API using the user inputs and save answer to variable named "query"
     query <- gtrends(keyword, geo = region, gprop = "web", time = "all")
     
-    enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again
     
     shiny::validate( #make sure the keyword yields at least any results. if not, enable button and return error message
       need_on_exit(!is.null(query$interest_over_time), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
