@@ -4,9 +4,9 @@ source("resources.R") #load functions defined in resources.R file
 
 shinyServer(function(input, output, session) {
    
-  ###############
-  ##Reactivity###
-  ###############
+  ###############################################################################
+  ################################ REACTIVITY ###################################
+  ###############################################################################
   
   disable_start <- observeEvent(input$start, priority = 2,{
     #this reactive deactivates the start button so it cannot be clicked repeatedly, triggering many reevaluations which can possibly take a long time
@@ -14,6 +14,9 @@ shinyServer(function(input, output, session) {
   })
   
   enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again
+  
+  
+  # ==========================GOOGLE QUERY=======================================
   
   google_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
     
@@ -24,7 +27,7 @@ shinyServer(function(input, output, session) {
     #check inputs:
     req(input$keyword, input$region) #require user inputs in order to proceed
     
-    keyword <- strsplit(input$keyword, ",")[[1]]  #get keyword to use from user input and save it to variable keyword
+    keyword <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
     region <- input$region #get region to use from user input and save it to variable region
     
     shiny::validate( #make sure the user entered a maximum of 5 words
@@ -36,7 +39,7 @@ shinyServer(function(input, output, session) {
     
     
     shiny::validate( #make sure the keyword yields at least any results. if not, enable button and return error message
-      need_on_exit(!is.null(query$interest_over_time), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
+      need_on_exit(!is.null(query$related_queries), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
     )
     
     words_to_add <- max(0,5-length(keyword)) #define how many words should be added automatically
@@ -52,6 +55,9 @@ shinyServer(function(input, output, session) {
   })
   
   
+  
+  
+  # ==========================EUROSTAT QUERY=====================================
   
   
   eurostat_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
@@ -76,6 +82,9 @@ shinyServer(function(input, output, session) {
   })
   
   
+  
+  
+  # ==========================ANALYSIS===========================================
   
   
   analysis <- reactive({
@@ -126,9 +135,12 @@ shinyServer(function(input, output, session) {
     return(pca) #return the list
   })
   
-  ############
-  ##Outputs###
-  ############
+  
+  
+  ###############################################################################
+  ################################ OUTPUTS ######################################
+  ###############################################################################
+  
   
   output$google_plot <- renderPlot({ 
     

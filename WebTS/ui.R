@@ -25,8 +25,7 @@ sidebar <- dashboardSidebar(disable = T)
 body <- dashboardBody(
   box(
     selectizeInput("target","Please choose the target series",choices = list("Unemployment","Consumption")),
-    textInput("keyword","Please enter a keyword you want to use","Please enter a word"),
-    #textInput("region","Please choose a region to specify the query to", "AT"),
+    textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
     sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = 1),
     bsButton("start","Go!"),
