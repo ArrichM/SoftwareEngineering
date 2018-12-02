@@ -17,6 +17,7 @@ google_multiple <- function(tophits,region){
 need_on_exit <- function (expr,FUN, message = paste(label, "must be provided"), label){
   #this function takes an expression and if it is true, it returns NULL. if it is false, it will execute the function specified as FUN
   #and return the message as error message. It is a slightly altered version of shiny::need
+  
   force(message)
   if (!isTruthy(expr)){
     FUN()
@@ -27,6 +28,7 @@ need_on_exit <- function (expr,FUN, message = paste(label, "must be provided"), 
 
 get_eurounemp <- function(region){
   #this function queries the eurostat API and retrieves the unadjusted series for the unemployment rate of the corresponding region
+  
   search_eurostat("unemployment", fixed = F)$code #look up the code of the series: namq_10_gdp
   unemp <- get_eurostat("une_rt_m", select_time = "M") #download monthly series
   #select the not seasonally adjusted series of the selected region, both genders, all ages, in percent:
@@ -41,6 +43,7 @@ get_eurounemp <- function(region){
 
 get_eurocons <- function(region){
   #this function queries the eurostat API and retrieves the unadjusted series for the private consumption of the corresponding region
+  
   search_eurostat("consumption", fixed = F)$code # get code of series namq_10_fcs
   privcons <- get_eurostat("namq_10_fcs", select_time = "Q") #download quarterly series
   privcons <- subset(privcons, geo == region) #select correct region

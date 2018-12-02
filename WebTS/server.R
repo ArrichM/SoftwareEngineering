@@ -111,6 +111,8 @@ shinyServer(function(input, output, session) {
     #run stepwise selection on the lagged PCs selecting according to BIC
     pca_model <- step(empty_pca, scope=list(lower=empty_pca, upper=full_pca) , direction = "both", k = log(ncol(comp_lags_window)))
     
+    output$model <- renderPrint({pander(summary(pca_model))}) #write model to output right away
+    
     #get fitted values from the model and format them as time series with same start as prediction data
     pca_fitted <- na.remove(ts(predict(pca_model,newdata = comp_lags), start = start(comp_lags),freq = freq_use))
     
@@ -158,7 +160,7 @@ shinyServer(function(input, output, session) {
     lines(target_ts) #add the target series as comparison
   })
 
-  
+
 })
 
 

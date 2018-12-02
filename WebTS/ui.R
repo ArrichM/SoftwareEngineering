@@ -21,8 +21,11 @@ body <- dashboardBody(
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
     bsButton("start","Go!"),
     plotOutput("google_plot"),
-    plotOutput("eurostat_plot"),
-    plotOutput("fitted_plot")
+    plotOutput("eurostat_plot")
+  ),
+  box(
+    plotOutput("fitted_plot"),
+    verbatimTextOutput("model")
   )
 )
 
