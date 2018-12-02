@@ -22,12 +22,16 @@ shinyServer(function(input, output, session) {
     #popularity over time of the keyword as well as the four words most related to it.
     #The output is a multivariate time series object
     
-    
+    #check inputs:
     req(input$keyword, input$region) #require user inputs in order to proceed
     
-    keyword <- input$keyword #get keyword to use from user input and save it to variable keyword
+    keyword <- strsplit(input$keyword, ",")[[1]]  #get keyword to use from user input and save it to variable keyword
     region <- input$region #get region to use from user input and save it to variable region
-
+    
+    shiny::validate( #make sure the user entered a maximum of 5 words
+      need_on_exit(length(keyword) < 6, enable_button, "Please enter a maximum of 5 words")
+    )
+    
     #query the google API using the user inputs and save answer to variable named "query"
     query <- gtrends(keyword, geo = region, gprop = "web", time = "all")
     
@@ -37,7 +41,8 @@ shinyServer(function(input, output, session) {
       need_on_exit(!is.null(query$interest_over_time), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
     )
     
-    tophits <- c(keyword,query$related_queries$value[1:4]) #save keyword itself and top 4 related words - 5 words in total
+    words_to_add <- max(0,5-length(keyword)) #define how many words should be added automatically
+    if(words_to_add > 0) tophits <- c(keyword,query$related_queries$value[1:words_to_add]) #save keywords and fill up to 5 words using the related words
     
     #use function for repeated querying. function can be found in resources.R
     query_ts <- google_multiple(tophits,region)
