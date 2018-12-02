@@ -13,9 +13,15 @@ shinyServer(function(input, output, session) {
     updateButton(session, "start", disabled = T) #disable button while query is running to avoid repeated querying
   })
   
-  google_query <- eventReactive(input$start,{#wait for the user to click the "Go!" button
+  
+  
+  
+  google_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
+    
     #this reactive will handle the user inputs related to the google API query and return a multivaritae time series object containing the 
-    #popularity over time of the keyword as well as the four words most relatrd to it.
+    #popularity over time of the keyword as well as the four words most related to it.
+    #The output is a multivariate time series object
+    
     
     req(input$keyword, input$region) #require user inputs in order to proceed
     
@@ -42,7 +48,15 @@ shinyServer(function(input, output, session) {
     return(query_ts)
   })
   
-  eurostat_query <- eventReactive(input$start,{
+  
+  
+  
+  eurostat_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
+    
+    #This reactive takes the user input in for of the chosen country and the desired target variable and retrieves the data form eurostat
+    #The output is a univariate time series object
+    
+    
     target <- input$target #read desired target variable from user input
     region <- input$region #read desired region from user input
     
@@ -58,7 +72,17 @@ shinyServer(function(input, output, session) {
     return(target_ts) #return the right target series
   })
   
+  
+  
+  
   analysis <- reactive({
+    
+    #This reactive takes the two time series objects from the reactives eurostat_query and google_query and performs a PCA on the google data. Then
+    #It proceeds fittign a model stepwise by AIC. It returns the final model and the fitted values.
+    #The output is  alist object containing the model and the fitted values as a time series object
+    
+    
+    
     target_ts <- eurostat_query() #read outputs of query expreccions
     google_ts <- google_query()
     freq_use <- frequency(target_ts)
@@ -90,7 +114,7 @@ shinyServer(function(input, output, session) {
     #get fitted values from the model and format them as time series with same start as prediction data
     pca_fitted <- na.remove(ts(predict(pca_model,newdata = comp_lags), start = start(comp_lags),freq = freq_use))
     
-    pca <- list(pca_model, pca_fitted) #store outputs in list#
+    pca <- list(pca_model, pca_fitted) #store outputs in list
     
     updateButton(session, "start", disabled = F) #now that the computation is completed, button is activated again
     
@@ -102,17 +126,32 @@ shinyServer(function(input, output, session) {
   ############
   
   output$google_plot <- renderPlot({ 
+    
     #this will plot the google data that is used to create the forecast
+    
+    
     query_ts <- google_query() #load the google trend series from the output of google_query
     autoplot.zoo(query_ts) #autolpot the series using ggplot2
   })
+  
+  
+  
   output$eurostat_plot <- renderPlot({ 
+    
     #this will plot the target series that is retrieved form eurostat
+    
+    
     target_ts <- eurostat_query() #load the eurostat data from the output of eurostat_query
     autoplot.zoo(target_ts) #autolpot the series using ggplot2
   })
+  
+  
+  
   output$fitted_plot <- renderPlot({
+    
     #this will plot the predicted values together with the target series. it is the "final" result of the algorithm
+    
+    
     pca_fitted <- analysis()[[2]] #read in fitted values from analysis reacrive
     target_ts <- eurostat_query()
     plot(pca_fitted, col = "red", type = "l") #plot the fitted values
