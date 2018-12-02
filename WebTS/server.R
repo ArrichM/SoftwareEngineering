@@ -95,7 +95,7 @@ shinyServer(function(input, output, session) {
     comps_ts <- ts(predict(google_pca), start = start(google_ts), frequency = freq_use)
 
     #create lagged set and set colnames:
-    nlags <- 0:12 #maximal number of lags to use
+    nlags <- isolate(input$nahead):12 #minimal and maximal number of lags to use
     
     comp_lags <- do.call(cbind,lapply(nlags, function(x) lag(comps_ts,-x))) #lag each series for desired number of times and bind them together
     colnames(comp_lags) <- paste0(rep(colnames(comps_ts),length(nlags)),"-L",rep(nlags,each = ncol(comps_ts))) #set correct colnames so no confusion arises afterwards

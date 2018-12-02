@@ -1,3 +1,5 @@
+#This file holds functions taht get called by server.R
+
 
 google_multiple <- function(tophits,region){
   #this is a function to repeatedly query the google API and combine the answers of the server into one multivariate time series.

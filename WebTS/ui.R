@@ -5,9 +5,18 @@ lapply(toinstall, install.packages, character.only = TRUE) #intall missing packa
 lapply(toload, require, character.only = TRUE) #load packages
 
 #import country codes to select from
-country_codes <- codelist[which(!is.na(codelist$ioc.name)),c("ioc.name","iso2c")]
-country_choices <- as.list(country_codes$iso2c)
+load("data/eurostat_countries.Rdata")
+
+# laad list of country codes and english coutry names
+country_codes <- codelist[which(!is.na(codelist$ioc.name)),c("ioc.name","eurostat")]
+
+# select those which are available on the eursotat api
+country_codes <- country_codes[which(country_codes$eurostat %in% eurostat_countries),]
+
+# transform to list
+country_choices <- as.list(country_codes$eurostat)
 names(country_choices) <- country_codes$ioc.name
+
 
 # Define UI for application that draws a histogram
 header <- dashboardHeader(title = "Longoni & Arrich")
@@ -19,6 +28,7 @@ body <- dashboardBody(
     textInput("keyword","Please enter a keyword you want to use","Please enter a word"),
     #textInput("region","Please choose a region to specify the query to", "AT"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
+    sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = 1),
     bsButton("start","Go!"),
     plotOutput("google_plot"),
     plotOutput("eurostat_plot")
