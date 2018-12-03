@@ -13,7 +13,9 @@ shinyServer(function(input, output, session) {
     updateButton(session, "start", disabled = T) #disable button while query is running to avoid repeated querying
   })
   
-  enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again
+  enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again in case of error
+  
+  
   
   
   # ==========================GOOGLE QUERY=======================================

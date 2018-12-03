@@ -4,10 +4,10 @@ toinstall <- toload[which(toload %in% installed.packages()[,1] == F)] #which pac
 lapply(toinstall, install.packages, character.only = TRUE) #intall missing packages
 lapply(toload, require, character.only = TRUE) #load packages
 
-#import country codes to select from
+# import country codes which are available on eurostat
 load("data/eurostat_countries.Rdata")
 
-# laad list of country codes and english coutry names
+# laad general list of country codes and english coutry names
 country_codes <- codelist[which(!is.na(codelist$ioc.name)),c("ioc.name","eurostat")]
 
 # select those which are available on the eursotat api
@@ -18,7 +18,7 @@ country_choices <- as.list(country_codes$eurostat)
 names(country_choices) <- country_codes$ioc.name
 
 
-# Define UI for application that draws a histogram
+# Define UI for application
 header <- dashboardHeader(title = "Longoni & Arrich")
 sidebar <- dashboardSidebar(disable = T)
 

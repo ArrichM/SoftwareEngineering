@@ -1,10 +1,9 @@
 #!/bin/bash
 # Run the R application from this bash script - easier for users without RStudio
 
-# get directory of the source the R codes from:
+# get directory from which to source the R codes from:
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-echo $DIR
 
 # check if R is installed and return error if not:
 
