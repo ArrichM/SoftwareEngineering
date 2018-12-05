@@ -37,8 +37,11 @@ shinyServer(function(input, output, session) {
     )
     
     #query the google API using the user inputs and save answer to variable named "query"
-    query <- gtrends(keyword, geo = region, gprop = "web", time = "all")
+    query <- try(gtrends(keyword, geo = region, gprop = "web", time = "all"))
     
+    shiny::validate( #make sure the user entered a maximum of 5 words
+      need_on_exit(class(query) !=  "try-error", enable_button, "OUPS, something went wrong. Please contact support")
+    )
     
     shiny::validate( #make sure the keyword yields at least any results. if not, enable button and return error message
       need_on_exit(!is.null(query$related_queries), enable_button, "The keyword you entered seems not to be very popular. Please try a different one.")
@@ -109,7 +112,7 @@ shinyServer(function(input, output, session) {
     comps_ts <- ts(predict(google_pca), start = start(google_ts), frequency = freq_use)
 
     #create lagged set and set colnames:
-    nlags <- isolate(input$nahead):12 #minimal and maximal number of lags to use
+    nlags <- isolate(input$nahead[[1]]):isolate(input$nahead[[2]]) #minimal and maximal number of lags to use
     
     comp_lags <- do.call(cbind,lapply(nlags, function(x) lag(comps_ts,-x))) #lag each series for desired number of times and bind them together
     colnames(comp_lags) <- paste0(rep(colnames(comps_ts),length(nlags)),"-L",rep(nlags,each = ncol(comps_ts))) #set correct colnames so no confusion arises afterwards

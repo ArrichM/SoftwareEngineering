@@ -27,7 +27,7 @@ body <- dashboardBody(
     selectizeInput("target","Please choose the target series",choices = list("Unemployment","Consumption")),
     textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
-    sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = 1),
+    sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = c(1,11)),
     bsButton("start","Go!"),
     plotOutput("google_plot"),
     plotOutput("eurostat_plot")
