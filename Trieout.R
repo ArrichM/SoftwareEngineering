@@ -11,7 +11,14 @@ library(tseries)
 
 stdz <- function(x) (x-mean(x,na.rm=T))/sd(x,na.rm=T)
 
-get.eurounemp <- function(){
+log_exogenous_yes <- 1 #0 or 1 for log and diffing
+log_endogenous_yes <- 1
+
+hitword <- "amazon"
+series_use <- 2 #2 for cons, 1 for unemp
+region_use <- "AT"
+
+get_eurounemp <- function(){
   search_eurostat("unemployment", fixed = F)$code #namq_10_gdp
   unemp <- get_eurostat("une_rt_m", select_time = "M")
   unemp <- subset(unemp, geo == "AT" & sex == "T" & unit == "PC_ACT" & age == "TOTAL" & s_adj == "NSA")
@@ -23,23 +30,28 @@ get.eurounemp <- function(){
   return(unemp.ts)
 }
 
-get.eurocons <- function(){
-  search_eurostat("consumption", fixed = F)$code #namq_10_fcs
-  privcons <- get_eurostat("namq_10_fcs", select_time = "Q")
-  privcons <- subset(privcons, geo == "AT")
-  privcons <- label_eurostat(privcons, lang = "de")
-  privcons <- subset(privcons, unit == "Verkettete Volumen (2010), Millionen Euro" & s_adj == "Saison- und kalenderbereinigte Daten" &
-                       na_item == "Konsumausgaben der privaten Haushalte")
-  privcons$time <- as.POSIXct.Date(privcons$time)
-  privcons.ts <- ts(rev(privcons$values), start = c(as.numeric(tail(substr(privcons$time,1,4),1)),
+get_eurocons <- function(region=region_use){
+  #this function queries the eurostat API and retrieves the unadjusted series for the private consumption of the corresponding region
+  
+  search_eurostat("consumption", fixed = F)$code # get code of series namq_10_fcs
+  privcons <- get_eurostat("namq_10_fcs", select_time = "Q") #download quarterly series
+  privcons <- subset(privcons, geo == region) #select correct region
+  privcons <- label_eurostat(privcons, lang = "de") #assign human readable labels
+  privcons <- subset(privcons, unit == "Verkettete Volumen (2010), Millionen Euro" & #not adjusted level values
+                       s_adj == "Unbereinigte Daten (d.h. weder saisonbereinigte noch kalenderbereinigte Daten)" &
+                       na_item == "Konsumausgaben der privaten Haushalte") #adjust correct series
+  privcons$time <- as.POSIXct.Date(privcons$time)  #format time as date
+  privcons.ts <- ts(rev(privcons$values), start = c(as.numeric(tail(substr(privcons$time,1,4),1)), #transform to time series object
                                                     as.numeric(tail(substr(privcons$time,6,7),1))), freq = 4)
-  privcons.ts <- diff(privcons.ts, lag = 1)/privcons.ts
+  #privcons.ts <- diff(privcons.ts, lag = 1)/privcons.ts #transform to quarter to quarter growth
+  #use absolute values, suppose cointegration
   return(privcons.ts)
 }
 
-freq_use <- 12
+freq_use <- 4 #unemp has 12, cons has 4
 #query the google api for keywords
-query <- gtrends(c("arbeitslosengeld"),geo = "AT", gprop = "web", time = "all")
+
+query <- gtrends(c(hitword),geo = "AT", gprop = "web", time = "all")
 #query2 <-  gtrends(c("Zalando"),geo = "AT", gprop = "web", time = "all")
 tophits <- query$related_queries$value[1:5]
 tophits
@@ -61,21 +73,30 @@ google_multiple <- function(tophits){
 #query_multiple_ts_bound <- cbind(google_multiple(tophits),google_multiple(tophits2))
 query_multiple_ts_bound <- google_multiple(tophits)
 
-query_multiple_ts_bound <- ts(apply(query_multiple_ts_bound,2,function(x) as.numeric(gsub("<","",as.character(x)))),start=start(query_multiple_ts_bound))
+query_multiple_ts_bound <- ts(apply(query_multiple_ts_bound,2,function(x) as.numeric(gsub("<","",as.character(x)))),
+                              start=start(query_multiple_ts_bound), freq = 12)
 
 autoplot.zoo(query_multiple_ts_bound)
 
+#aggregate the pca of the google query to rigth frequency, i.e. same freq as the target series
+if(frequency(query_multiple_ts_bound) != freq_use) query_multiple_ts_bound <- aggregate(query_multiple_ts_bound,nfrequency = freq_use)
+
+#log diffs if desired
+if(log_exogenous_yes == 1) query_multiple_ts_bound <- diff(log(1+query_multiple_ts_bound))
+
 #do PCA of the time series and get predicted PCs
 PCA_query <- prcomp((query_multiple_ts_bound)) #insert diff here if differentiation is desired
-comps_ts <- ts(predict(PCA_query), start = start(query_multiple_ts_bound), frequency = 12)
+comps_ts <- ts(predict(PCA_query), start = start(query_multiple_ts_bound), frequency = freq_use)
 plot(comps_ts)
 
-#aggregate the pca of the google query to rigth frequency, i.e. same freq as the target series
-if(frequency(comps_ts) != freq_use) comps_ts <- aggregate(comps_ts,nfrequency = freq_use)
 
 #load target series from eurostat api
-unemp = get.eurounemp()
-#unemp = get.eurocons()
+if(series_use == 1) unemp <- get_eurounemp()
+if(series_use == 2) unemp <- get_eurocons()
+
+unemp_orig <- unemp
+
+if(log_endogenous_yes == 1) unemp <- diff(log(1+unemp))
 
 #create lagged set and set colnames
 nlags <- 0:12
@@ -100,4 +121,15 @@ summary(pca.model)
 point_estimate <- na.remove(ts(predict(pca.model,newdata = comp_lags), start = start(comp_lags),freq = freq_use))
 plot(unemp)
 lines(point_estimate, col = "red")
+
+unemp_orig
+point_estimate
+
+
+
+
+unemp_orig
+
+
+
 
