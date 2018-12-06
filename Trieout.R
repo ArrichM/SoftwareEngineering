@@ -16,7 +16,7 @@ log_endogenous_yes <- 1
 
 hitword <- "amazon"
 series_use <- 2 #2 for cons, 1 for unemp
-region_use <- "AT"
+region_use <- "DE"
 
 get_eurounemp <- function(){
   search_eurostat("unemployment", fixed = F)$code #namq_10_gdp
@@ -114,7 +114,7 @@ full.pca <- lm((unemp_window)~.,data=comp_lags_window)
 empty.pca <- lm((unemp_window)~1,data=comp_lags_window)
 
 #run stepwise selection on the lagged PCs
-pca.model <- step(empty.pca, scope=list(lower=empty.pca, upper=full.pca) , direction = "both", k = log(ncol(comp_lags_window)))
+pca.model <- step(empty.pca, scope=list(lower=empty.pca, upper=full.pca) , direction = "both", k = 6.2)
 summary(pca.model)
 
 #produce fitted values
@@ -122,14 +122,52 @@ point_estimate <- na.remove(ts(predict(pca.model,newdata = comp_lags), start = s
 plot(unemp)
 lines(point_estimate, col = "red")
 
-unemp_orig
-point_estimate
+
+#if logged, trace back level values
 
 
+for(i in 1:length(nahead)){
+
+  window(prediction[,1],start = nahead[i+1], end = nahead[i+1]) <- as.numeric(window(prediction[,1],start = nahead[i], end = nahead[i])) *
+    (1+as.numeric(window(prediction[,2],start = nahead[i+1], end = nahead[i+1])))
+}
+
+pred_orig <- prediction
+time_total <- time(unemp_orig)
 
 
-unemp_orig
+multiply_recursive <- function(original,growth_rates){
+  
+  # This function takes a level series and a series of groth rates that may be longer than the level sereis. It 
+  # retruns the level series that results when applying the growth values of period t to the level of period and interpreting the result
+  # as level of t+1.
+  
+  nahead <- time(window(growth_rates, start = end(original)))
+  prediction <- cbind(original,growth_rates)
+  pred_orig <- na.remove(prediction)
+  time_total <- time(pred_orig)
+  
+  for(i in 1:(length(nahead)-1)){
+    
+    window(prediction[,1],start = nahead[i+1], end = nahead[i+1]) <- as.numeric(window(prediction[,1],start = nahead[i], end = nahead[i])) *
+      (1+as.numeric(window(prediction[,2],start = nahead[i+1], end = nahead[i+1])))
+  }
+  
+  for(i in 1:(length(time_total)-1)){
+    window(pred_orig[,1],start = time_total[i+1], end = time_total[i+1]) <- as.numeric(window(prediction[,1],start = time_total[i], end = time_total[i])) *
+      (1+as.numeric(window(prediction[,2],start = time_total[i+1], end = time_total[i+1])))
+  }
+  
+  forecast_in_levels <- ts(append(pred_orig[,1],window(prediction[,1], start = nahead[2])), end=end(prediction), freq = frequency(prediction))
+  
+  return(forecast_in_levels)
+  
+}
 
+multiply_recursive(unemp_orig,point_estimate)
 
+plot(pred_orig[,1])
+
+lines(unemp_orig, col = "red")
 
 
