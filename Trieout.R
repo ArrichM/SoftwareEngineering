@@ -96,7 +96,7 @@ if(series_use == 2) unemp <- get_eurocons()
 
 unemp_orig <- unemp
 
-if(log_endogenous_yes == 1) unemp <- diff(log(1+unemp))
+if(log_endogenous_yes == 1) unemp <- diff(log(unemp))
 
 #create lagged set and set colnames
 nlags <- 0:12

@@ -40,7 +40,7 @@ shinyServer(function(input, output, session) {
     query <- try(gtrends(keyword, geo = region, gprop = "web", time = "all"))
     
     shiny::validate( #make sure the user entered a maximum of 5 words
-      need_on_exit(class(query) !=  "try-error", enable_button, "OUPS, something went wrong. Please contact support")
+      need_on_exit(class(query) !=  "try-error", enable_button, "OUPS, something went wrong. We could not query the Google API.")
     )
     
     shiny::validate( #make sure the keyword yields at least any results. if not, enable button and return error message
@@ -79,10 +79,10 @@ shinyServer(function(input, output, session) {
                          Consumption = try(get_eurocons(region = region))
                         )
     
-    shiny::validate( #make sure we are able to retrieve the a series from eurostat. if not, enable button and return error message
-      need_on_exit(!is.null(target_ts), enable_button, "Sorry, the region you chose is not available. Please try a different one.")
+    shiny::validate( #make sure the user entered a maximum of 5 words
+      need_on_exit(class(target_ts) !=  "try-error", enable_button, "OUPS, something went wrong. 
+                   We could not find your target series. Please choose a differnt one")
     )
-    
     return(target_ts) #return the right target series
   })
   
@@ -107,12 +107,27 @@ shinyServer(function(input, output, session) {
     #if needed, aggregate google data so the frequency fits the eurostat data
     if(ceiling(frequency(google_ts)) != freq_use) google_ts <- aggregate(google_ts, nfrequency = freq_use)
     
+    # calcualte diff of logged target series if desired and store original values to produce level forecast later
+    if(input$end_difflog == T){
+      target_ts_orig <- target_ts
+      target_ts <- diff(log(target_ts))
+    }
+    
+    # calcualte diff of logged exogenous series if desired - no need to store originals
+    if(input$exo_difflog == T){
+      #replace 0 with 1 to handle log domain
+      google_ts <- rollapply(google_ts,1,function(x) max (1,x), by.column = T)
+      # get difflogs
+      google_ts <- diff(log(google_ts))
+      
+    }
+    
     #do PCA of the time series and get predicted PCs
     google_pca <- prcomp((google_ts))
     comps_ts <- ts(predict(google_pca), start = start(google_ts), frequency = freq_use)
 
     #create lagged set and set colnames:
-    nlags <- isolate(input$nahead[[1]]):isolate(input$nahead[[2]]) #minimal and maximal number of lags to use
+    nlags <- input$nahead[[1]]:input$nahead[[2]] #minimal and maximal number of lags to use
     
     comp_lags <- do.call(cbind,lapply(nlags, function(x) lag(comps_ts,-x))) #lag each series for desired number of times and bind them together
     colnames(comp_lags) <- paste0(rep(colnames(comps_ts),length(nlags)),"-L",rep(nlags,each = ncol(comps_ts))) #set correct colnames so no confusion arises afterwards
@@ -132,6 +147,8 @@ shinyServer(function(input, output, session) {
     
     #get fitted values from the model and format them as time series with same start as prediction data
     pca_fitted <- na.remove(ts(predict(pca_model,newdata = comp_lags), start = start(comp_lags),freq = freq_use))
+    
+    if(input$end_difflog == T) pca_fitted <- multiply_recursive(target_ts_orig, pca_fitted)
     
     pca <- list(pca_model, pca_fitted) #store outputs in list
     

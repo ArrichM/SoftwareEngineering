@@ -28,6 +28,8 @@ body <- dashboardBody(
     textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
     sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = c(1,11)),
+    checkboxInput("end_difflog","Log and differentiate target series?"),
+    checkboxInput("exo_difflog","Log and differentiate covariate series?"),
     bsButton("start","Go!"),
     plotOutput("google_plot"),
     plotOutput("eurostat_plot")
