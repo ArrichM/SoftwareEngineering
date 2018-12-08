@@ -29,15 +29,15 @@ shinyServer(function(input, output, session) {
     #check inputs:
     req(input$keyword, input$region) #require user inputs in order to proceed
     
+    keyword <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
+    region <- input$region #get region to use from user input and save it to variable region
+    
     #check internet connection
     internet <- has.internet()
     
-    shiny::validate(
+    shiny::validate( #validate internet connection
       need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
     )
-    
-    keyword <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
-    region <- input$region #get region to use from user input and save it to variable region
     
     shiny::validate( #make sure the user entered a maximum of 5 words
       need_on_exit(length(keyword) < 6, enable_button, "Please enter a maximum of 5 words")
@@ -80,6 +80,13 @@ shinyServer(function(input, output, session) {
     
     target <- input$target #read desired target variable from user input
     region <- input$region #read desired region from user input
+    
+    #check internet connection
+    internet <- has.internet()
+    
+    shiny::validate( #validate internet connection
+      need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
+    )
     
     target_ts <- switch(target, #use switch to select correct target series. the query funcitons can be found in resources.R
                          Unemployment = try(get_eurounemp(region = region)), #wrap with try in order to avoid shutdown in cse of wrong region
