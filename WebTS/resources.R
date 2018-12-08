@@ -61,7 +61,6 @@ get_eurocons <- function(region){
   return(privcons.ts)
 }
 
-
 multiply_recursive <- function(original,growth_rates){
   
   # This function takes a level series and a series of groth rates that may be longer than the level sereis. It 
@@ -96,3 +95,10 @@ multiply_recursive <- function(original,growth_rates){
   return(forecast_in_levels)
   
 }
+
+has.internet <- function(){
+  !is.null(curl::nslookup("r-project.org", error = FALSE))
+} #function to test internet connection
+
+
+has.internet()

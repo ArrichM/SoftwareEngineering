@@ -29,6 +29,13 @@ shinyServer(function(input, output, session) {
     #check inputs:
     req(input$keyword, input$region) #require user inputs in order to proceed
     
+    #check internet connection
+    internet <- has.internet()
+    
+    shiny::validate(
+      need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
+    )
+    
     keyword <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
     region <- input$region #get region to use from user input and save it to variable region
     
