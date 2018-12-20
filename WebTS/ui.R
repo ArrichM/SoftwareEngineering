@@ -24,6 +24,9 @@ sidebar <- dashboardSidebar(disable = T)
 
 body <- dashboardBody(
   box(
+    
+    ###########INPUTS##############
+    
     selectizeInput("target","Please choose the target series",choices = list("Unemployment","Consumption")),
     textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
@@ -31,6 +34,9 @@ body <- dashboardBody(
     checkboxInput("end_difflog","Log and differentiate target series?"),
     checkboxInput("exo_difflog","Log and differentiate covariate series?"),
     bsButton("start","Go!"),
+    
+    ###########OUTPUTS#############
+    
     plotOutput("google_plot"),
     plotOutput("eurostat_plot")
   ),

@@ -99,6 +99,3 @@ multiply_recursive <- function(original,growth_rates){
 has.internet <- function(){
   !is.null(curl::nslookup("r-project.org", error = FALSE))
 } #function to test internet connection
-
-
-has.internet()

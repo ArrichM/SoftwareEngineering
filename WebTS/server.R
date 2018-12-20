@@ -8,6 +8,9 @@ shinyServer(function(input, output, session) {
   ################################ REACTIVITY ###################################
   ###############################################################################
   
+  
+  
+  
   disable_start <- observeEvent(input$start, priority = 2,{
     #this reactive deactivates the start button so it cannot be clicked repeatedly, triggering many reevaluations which can possibly take a long time
     updateButton(session, "start", disabled = T) #disable button while query is running to avoid repeated querying
@@ -22,9 +25,11 @@ shinyServer(function(input, output, session) {
   
   google_query <- eventReactive(input$start,{ #wait for the user to click the "Go!" button
     
-    #this reactive will handle the user inputs related to the google API query and return a multivaritae time series object containing the 
+    #This reactive will handle the user inputs related to the google API query and return a multivaritae time series object containing the 
     #popularity over time of the keyword as well as the four words most related to it.
     #The output is a multivariate time series object
+    
+    
     
     #check inputs:
     req(input$keyword, input$region) #require user inputs in order to proceed
@@ -76,6 +81,7 @@ shinyServer(function(input, output, session) {
     
     #This reactive takes the user input in for of the chosen country and the desired target variable and retrieves the data form eurostat
     #The output is a univariate time series object
+    
     
     
     target <- input$target #read desired target variable from user input
@@ -155,7 +161,7 @@ shinyServer(function(input, output, session) {
     empty_pca <- lm((target_window)~1,data=comp_lags_window) #empty model on constant number 1
     
     #run stepwise selection on the lagged PCs selecting according to BIC
-    pca_model <- step(empty_pca, scope=list(lower=empty_pca, upper=full_pca) , direction = "both", k = log(ncol(comp_lags_window)))
+    pca_model <- step(empty_pca, scope=list(lower=empty_pca, upper=full_pca) , direction = "both", k = 2)
     
     output$model <- renderPrint({pander(summary(pca_model))}) #write model to output right away
     

@@ -12,6 +12,6 @@ if ! [ -x "$(command -v R)" ]; then
   exit 1
 fi
 
-#run the app from R
+#run the app from R in browser window
 
 R -e "shiny::runApp('$DIR', launch.browser=T)"
