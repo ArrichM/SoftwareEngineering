@@ -1,13 +1,13 @@
 toload <- c("shiny","shinydashboard","gtrendsR", "magrittr","reshape2","lubridate","zoo","tseries","eurostat","dyn","ggplot2","ggfortify",
             "shinyBS","countrycode","pander")
 toinstall <- toload[which(toload %in% installed.packages()[,1] == F)] #which packages are not already installed?
-lapply(toinstall, install.packages, character.only = TRUE) #intall missing packages
+lapply(toinstall, install.packages, character.only = TRUE) #install missing packages
 lapply(toload, require, character.only = TRUE) #load packages
 
 # import country codes which are available on eurostat
 load("data/eurostat_countries.Rdata")
 
-# laad general list of country codes and english coutry names
+# load general list of country codes and english coutry names
 country_codes <- codelist[which(!is.na(codelist$ioc.name)),c("ioc.name","eurostat")]
 
 # select those which are available on the eursotat api

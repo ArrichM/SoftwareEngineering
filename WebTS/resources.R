@@ -1,4 +1,4 @@
-#This file holds functions taht get called by server.R
+#This file holds functions that get called by server.R
 
 
 google_multiple <- function(tophits,region){
