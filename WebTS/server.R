@@ -51,7 +51,7 @@ shinyServer(function(input, output, session) {
     #query the google API using the user inputs and save answer to variable named "query"
     query <- try(gtrends(keyword, geo = region, gprop = "web", time = "all"))
     
-    shiny::validate( #make sure the user entered a maximum of 5 words
+    shiny::validate( #make sure the query yields a usable object
       need_on_exit(class(query) !=  "try-error", enable_button, "OUPS, something went wrong. We could not query the Google API.")
     )
     
@@ -91,7 +91,7 @@ shinyServer(function(input, output, session) {
     internet <- has_internet()
     
     shiny::validate( #validate internet connection
-      need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
+      need_on_exit(internet==T, enable_button, "Please make sure you are connected to the internet and try again")
     )
     
     target_ts <- switch(target, #use switch to select correct target series. the query funcitons can be found in resources.R
@@ -211,10 +211,18 @@ shinyServer(function(input, output, session) {
     #this will plot the predicted values together with the target series. it is the "final" result of the algorithm
     
     
-    pca_fitted <- analysis()[[2]] #read in fitted values from analysis reacrive
-    target_ts <- eurostat_query()
-    plot(pca_fitted, col = "red", type = "l") #plot the fitted values
-    lines(target_ts) #add the target series as comparison
+    Predicted <- analysis()[[2]] #read in fitted values from analysis reacrive
+    Historical <- eurostat_query() #original series from eurostat API
+    
+    #Prepare data for ggplot
+    plot_fitted <- fortify.zoo(cbind(Predicted,Historical))
+    plot_fitted <- melt(plot_fitted, id = "Index")
+    
+    #ggplot
+    ggplot(plot_fitted, aes(x = Index, y= value, color = variable )) + geom_line() +
+      theme(legend.position = "bottom", legend.title = element_blank())  + xlab("Time") +
+      ylab("Value")
+    
   })
 
 
