@@ -1,5 +1,5 @@
 toload <- c("shiny","shinydashboard","gtrendsR", "magrittr","reshape2","lubridate","zoo","tseries","eurostat","dyn","ggplot2","ggfortify",
-            "shinyBS","countrycode","pander")
+            "shinyBS","countrycode","pander","timeSeries")
 toinstall <- toload[which(toload %in% installed.packages()[,1] == F)] #which packages are not already installed?
 lapply(toinstall, install.packages, character.only = TRUE) #install missing packages
 lapply(toload, require, character.only = TRUE) #load packages
@@ -30,7 +30,7 @@ body <- dashboardBody(
     selectizeInput("target","Please choose the target series",choices = list("Unemployment","Consumption")),
     textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
     selectizeInput("region","Please choose a region to specify the query to", choices = country_choices, selected = "AT"),
-    sliderInput("nahead" ,"Number of minimal leading periods", 0, 11, value = c(1,11)),
+    sliderInput("nahead" ,"Lags to include", 0, 11, value = c(1,11)),
     checkboxInput("end_difflog","Log and differentiate target series?"),
     checkboxInput("exo_difflog","Log and differentiate covariate series?"),
     bsButton("start","Go!"),

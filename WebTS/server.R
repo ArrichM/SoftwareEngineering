@@ -38,7 +38,7 @@ shinyServer(function(input, output, session) {
     region <- input$region #get region to use from user input and save it to variable region
     
     #check internet connection
-    internet <- has.internet()
+    internet <- has_internet()
     
     shiny::validate( #validate internet connection
       need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
@@ -88,7 +88,7 @@ shinyServer(function(input, output, session) {
     region <- input$region #read desired region from user input
     
     #check internet connection
-    internet <- has.internet()
+    internet <- has_internet()
     
     shiny::validate( #validate internet connection
       need_on_exit(internet==T, enable_button, "Please make sure you are connected to the intneret and try again")
