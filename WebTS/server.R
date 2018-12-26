@@ -12,12 +12,13 @@ shinyServer(function(input, output, session) {
   
   
   disable_start <- observeEvent(input$start, priority = 2,{
+    
     #this reactive deactivates the start button so it cannot be clicked repeatedly, triggering many reevaluations which can possibly take a long time
+    
     updateButton(session, "start", disabled = T) #disable button while query is running to avoid repeated querying
   })
   
   enable_button <- function() updateButton(session, "start", disabled = F) #function to wrap in need_on_exit that will enable the start button again in case of error
-  
   
   
   
@@ -173,6 +174,7 @@ shinyServer(function(input, output, session) {
     pca <- list(pca_model, pca_fitted) #store outputs in list
     
     updateButton(session, "start", disabled = F) #now that the computation is completed, button is activated again
+    updateButton(session, "report_dialogue", disabled = F) #now that the computation is completed, a report may be created
     
     return(pca) #return the list
   })
@@ -183,6 +185,7 @@ shinyServer(function(input, output, session) {
   ################################ OUTPUTS ######################################
   ###############################################################################
   
+  # ========================== PRINTS ===========================================
   
   output$google_plot <- renderPlot({ 
     
@@ -224,7 +227,45 @@ shinyServer(function(input, output, session) {
       ylab("Value")
     
   })
-
+  
+  # ========================== REPORT ===========================================
+  
+  observeEvent(input$report_dialogue, { #dialogue box to handle creation of report
+    showModal(modalDialog(footer = modalButton("Abbrechen"),
+                          title = "Create Report",
+                          HTML("<br><br>"),
+                          radioButtons("format","Please choose the document format", choices = list("HTML","PDF","WORD")),
+                          helpText("Please note that in order to create a report in PDF format, 
+                                   some Latex to PDF distribution must be installed on your device"),
+                          downloadButton("report","Create Report")
+                          
+      )
+    )
+    
+  })
+  
+  
+  output$report <- downloadHandler(
+    
+    # This function handles the passing of the environment to the RMarkdown rendering process and returns the
+    # desired document
+    
+     filename = function() {
+       paste('report', sep = '.', switch(
+         input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
+       ))
+     },
+     
+     content = function(file) {
+       
+       library(rmarkdown)
+       out <- render('report.Rmd', switch(
+         input$format,
+         PDF = pdf_document(), HTML = html_document(), Word = word_document()
+       ))
+       file.rename(out, file)
+     }
+    )
 
 })
 

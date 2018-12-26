@@ -4,6 +4,8 @@ toinstall <- toload[which(toload %in% installed.packages()[,1] == F)] #which pac
 lapply(toinstall, install.packages, character.only = TRUE) #install missing packages
 lapply(toload, require, character.only = TRUE) #load packages
 
+################################################## County Codes #####################################################
+
 # import country codes which are available on eurostat
 load("data/eurostat_countries.Rdata")
 
@@ -25,7 +27,7 @@ sidebar <- dashboardSidebar(disable = T)
 body <- dashboardBody(
   box(
     
-    ###########INPUTS##############
+################################################## INPUTS #####################################################
     
     selectizeInput("target","Please choose the target series",choices = list("Unemployment","Consumption")),
     textInput("keyword","Please enter up to five keywords you want to use","Please enter a word"),
@@ -34,9 +36,12 @@ body <- dashboardBody(
     checkboxInput("end_difflog","Log and differentiate target series?"),
     checkboxInput("exo_difflog","Log and differentiate covariate series?"),
     bsButton("start","Go!"),
+    bsButton("report_dialogue","Report", disabled = T),
+   
     
-    ###########OUTPUTS#############
     
+################################################## OUTPUTS #####################################################
+
     plotOutput("google_plot"),
     plotOutput("eurostat_plot")
   ),

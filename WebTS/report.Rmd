@@ -1,0 +1,83 @@
+---
+title: "WebTS Report"
+date: "26 12 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+
+case_sep <- function(expr1, expr2){ #quick way to determine the case we are dealing with, i.e. consumption or unemployment
+  switch(input$target, "Unemloyment" = expr1, "Consumption" = expr2)
+}
+```
+
+#Target Series
+The target series is chosen to be the `r paste0(input$target, case_sep("rate",""))` of `r paste(names(input$region))`. The data was retrieved from Eurostat as the following:
+
+```{r plot eurostat}
+
+    target_ts <- eurostat_query() #load the eurostat data from the output of eurostat_query
+    autoplot.zoo(target_ts) #
+
+```
+
+#Hitwords
+To predict the target series, the followng words were used:
+
+```{r keywords}
+
+  user_words <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
+  
+  Keyword <- colnames(google_query())
+  Source <- rep("Auto",length(Keyword))
+  Source[which(Keyword %in% user_words)] <- "User"
+  
+  pander(rbind(seq_len(length(Keyword)),Keyword,Source))
+
+```
+
+Where less than five words are specified, the rest is added automatically using the most related hitwords from Google trends. The Trend series look like the following:
+
+
+```{r plot google}
+
+    query_ts <- google_query() #load the google trend series from the output of google_query
+    autoplot.zoo(query_ts) #autolpot the series using ggplot2
+
+```
+
+
+#The Model
+
+`r if(input$end_difflog==T) print("Before any further computation is done, the natural logarithm of the target series is taken, and the outcome is differentiated one times, to retrieve growth rates.");if(input$exo_difflog==T) print("The same is applied to the explaining Google Trend data")`
+On these data, a PCA is performed and the resulting components are are lagged for `r paste(input$nahead[[1]])` to `r paste(input$nahead[[2]])` periods.
+Furthermore, an iterating selection process is run, specifying an OLS according to the AIC. The final model is sepcified to be:
+
+```{r model}
+    
+    model <- analysis()[[1]]
+    print(summary(model))
+
+```
+
+and yileds the following forecast:
+
+```{r plot fitted}
+    
+    Predicted <- analysis()[[2]] #read in fitted values from analysis reacrive
+    Historical <- eurostat_query() #original series from eurostat API
+    
+    #Prepare data for ggplot
+    plot_fitted <- fortify.zoo(cbind(Predicted,Historical))
+    plot_fitted <- melt(plot_fitted, id = "Index")
+    
+    #ggplot
+    ggplot(plot_fitted, aes(x = Index, y= value, color = variable )) + geom_line() +
+      theme(legend.position = "bottom", legend.title = element_blank())  + xlab("Time") +
+      ylab("Value")
+
+```
+
+
+
