@@ -80,4 +80,17 @@ and yileds the following forecast:
 ```
 
 
+The following test were run:
+```{r tests}
+    
+# run tests
+test_results <- test_dir(getwd(), reporter="summary")
+
+# test results
+print(test_results)
+
+```
+
+
+
 
