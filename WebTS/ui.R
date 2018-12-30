@@ -37,16 +37,18 @@ body <- dashboardBody(
     checkboxInput("exo_difflog","Log and differentiate covariate series?"),
     bsButton("start","Go!"),
     bsButton("report_dialogue","Report", disabled = T),
-   
+    br(),br(),
     
     
 ################################################## OUTPUTS #####################################################
-
+    HTML("These are your explaining variables:"),
     plotOutput("google_plot"),
+    HTML("Here's yout target series:"),
     plotOutput("eurostat_plot")
   ),
   box(
     plotOutput("fitted_plot"),
+    HTML("The forecast above is produced using the following model:"),
     verbatimTextOutput("model")
   )
 )
