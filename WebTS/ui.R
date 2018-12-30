@@ -9,10 +9,10 @@ lapply(toload, require, character.only = TRUE) #load packages
 # import country codes which are available on eurostat
 load("data/eurostat_countries.Rdata")
 
-# load general list of country codes and english coutry names
+# load general list of country codes and english country names
 country_codes <- codelist[which(!is.na(codelist$ioc.name)),c("ioc.name","eurostat")]
 
-# select those which are available on the eursotat api
+# select those which are available on the eurostat api
 country_codes <- country_codes[which(country_codes$eurostat %in% eurostat_countries),]
 
 # transform to list
@@ -22,9 +22,13 @@ names(country_choices) <- country_codes$ioc.name
 
 # Define UI for application
 header <- dashboardHeader(title = "Longoni & Arrich")
-sidebar <- dashboardSidebar(disable = T)
+
+# no need for a sidebar in this rather simple HMI
+sidebar <- dashboardSidebar(disable = T) 
 
 body <- dashboardBody(
+  
+  #create box and fill it with content
   box(
     
 ################################################## INPUTS #####################################################

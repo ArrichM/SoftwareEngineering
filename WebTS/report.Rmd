@@ -7,7 +7,7 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 
-case_sep <- function(expr1, expr2){ #quick way to determine the case we are dealing with, i.e. consumption or unemployment
+case_sep <- function(expr1, expr2){ # quick way to determine the case we are dealing with, i.e. consumption or unemployment and return accoring argument - this is ment to be used to autocomplete text depending on the case.
   switch(input$target, "Unemloyment" = expr1, "Consumption" = expr2)
 }
 ```
@@ -17,8 +17,8 @@ The target series is chosen to be the `r paste0(input$target, case_sep("rate",""
 
 ```{r plot eurostat}
 
-    target_ts <- eurostat_query() #load the eurostat data from the output of eurostat_query
-    autoplot.zoo(target_ts) #
+    target_ts <- eurostat_query() # load the eurostat data from the output of eurostat_query
+    autoplot.zoo(target_ts) 
 
 ```
 
@@ -27,13 +27,13 @@ To predict the target series, the followng words were used:
 
 ```{r keywords}
 
-  user_words <- strsplit(input$keyword, ",")[[1]]  #get keywords to use from user input and save it to variable keyword
+  user_words <- strsplit(input$keyword, ",")[[1]]  # get keywords that were specified by user
   
-  Keyword <- colnames(google_query())
-  Source <- rep("Auto",length(Keyword))
-  Source[which(Keyword %in% user_words)] <- "User"
+  Keyword <- colnames(google_query()) # get all keywords that were finally used
+  Source <- rep("Auto",length(Keyword)) # as a starting point, assume all inputs were automatically added
+  Source[which(Keyword %in% user_words)] <- "User" # single out those inputs that were given by the user
   
-  pander(rbind(seq_len(length(Keyword)),Keyword,Source))
+  pander(rbind(seq_len(length(Keyword)),Keyword,Source)) # put out in clean table
 
 ```
 
@@ -43,7 +43,7 @@ Where less than five words are specified, the rest is added automatically using 
 ```{r plot google}
 
     query_ts <- google_query() #load the google trend series from the output of google_query
-    autoplot.zoo(query_ts) #autolpot the series using ggplot2
+    autoplot.zoo(query_ts) #autolplot the series using ggplot2
 
 ```
 
@@ -65,7 +65,7 @@ and yileds the following forecast:
 
 ```{r plot fitted}
     
-    Predicted <- analysis()[[2]] #read in fitted values from analysis reacrive
+    Predicted <- analysis()[[2]] #read in fitted values from analysis reactive
     Historical <- eurostat_query() #original series from eurostat API
     
     #Prepare data for ggplot
