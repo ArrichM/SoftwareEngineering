@@ -47,7 +47,7 @@ body <- dashboardBody(
 ################################################## OUTPUTS #####################################################
     HTML("These are your explaining variables:"),
     plotOutput("google_plot"),
-    HTML("Here's yout target series:"),
+    HTML("Here's your target series:"),
     plotOutput("eurostat_plot")
   ),
   box(
